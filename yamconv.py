@@ -29,7 +29,7 @@ MLT_SQLITE_TO_FASTTEXT = 'mlt.sqlite2fasttext'
 def main(argv):
     progname = argv[0]
     log_level = logging.WARN
-    convert = None
+    infile, outfile, convert = None, None, None
     try:
         opts, _ = getopt.getopt(argv[1:], 'i:o:c:v')
         for opt, arg in opts:
@@ -46,14 +46,20 @@ def main(argv):
                 log_level = logging.INFO
                 continue
     except Exception as e:
-        usage(progname, e)
+        err(progname, e)
+    if not infile:
+        err(progname, Exception('-i is missing'))
+    if not outfile:
+        err(progname, Exception('-o is missing'))
+    if not convert:
+        err(progname, Exception('-c is missing'))
     logger = get_logger(log_level)
     converter = get_converter(
         convert, infile, outfile,
         CACHE_LABELS, logger, log_level, NUM_LINES)
     if not converter:
-        usage(progname,
-              Exception('Unknown converter name {}'.format(convert)))
+        err(progname,
+            Exception('Unknown converter name {}'.format(convert)))
     try:
         converter.convert()
     except YamconvError as e:
@@ -86,7 +92,7 @@ def get_logger(log_level):
     return logger
 
 
-def usage(progname, e=None):
+def err(progname, e=None):
     converter_names = [MLT_FASTTEXT_TO_SQLITE, MLT_SQLITE_TO_FASTTEXT]
     print('Usage: {} -c converter_name -i input_file -o ouput_file -v'.format(progname),
           file=sys.stderr)

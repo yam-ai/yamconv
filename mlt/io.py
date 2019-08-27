@@ -18,6 +18,7 @@ from mlt.formatter import MultiLabelText, FromFastText, Normalizer, Formatter, T
 from common.ex import YamconvError
 import sqlite3
 import logging
+import os
 
 
 class Converter:
@@ -120,6 +121,9 @@ class FastTextReader(Reader):
         super(self.__class__, self).__init__(fasttext_path)
 
     def open(self):
+        if not os.path.isfile(self.filepath):
+            raise YamconvError(
+                'Input file {} does not exists.'.format(self.filepath))
         self.fasttext_file = open(self.filepath, 'r')
 
     def read(self):
@@ -164,6 +168,9 @@ class SQLiteReader(Reader):
         super(self.__class__, self).__init__(sqlite_path)
 
     def open(self):
+        if not os.path.isfile(self.filepath):
+            raise YamconvError(
+                'Input file {} does not exists.'.format(self.filepath))
         self.conn = sqlite3.connect(self.filepath)
         self.cur = self.conn.cursor()
         self.cur.execute('SELECT id FROM texts')
