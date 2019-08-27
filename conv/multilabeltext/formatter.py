@@ -15,19 +15,61 @@
 
 """
 >>> text = 'this is a text'
->>> labels = { '__label__a', '__label__b' }
+>>> labels = { 'Hello,  World.', 'What a  *Wonderful* World!' }
+>>> ft_labels_1 = { '__label__' + label for label in labels }
+>>> norm_labels = { 'hello_world', 'what_a_wonderful_world' }
+>>> ft_labels_2 = { '__label__' + label for label in norm_labels }
 >>> mlt = MultiLabelText(text)
->>> for lab in labels:
+>>> for lab in ft_labels_1:
 ...     mlt.add_label(lab)
 >>> mlt.text == text
 True
->>> mlt.labels == labels
+>>> mlt.labels == ft_labels_1
 True
+>>> fft = FromFastText()
+>>> norm_mlt = fft.format(mlt)
+>>> norm_mlt.text == text
+True
+>>> norm_mlt.labels == labels
+True
+>>> tft = ToFastText()
+>>> to_mlt = tft.format(norm_mlt)
+>>> to_mlt.text == text
+True
+>>> to_mlt.labels == ft_labels_2
+True
+>>>
+>>> nft = Normalizer()
+>>> n_mlt = nft.format(norm_mlt)
+>>> n_mlt.text == text
+True
+>>> n_mlt.labels == norm_labels
+True
+>>> fft = FromFastText(cache_labels=True)
+>>> norm_mlt = fft.format(mlt)
+>>> norm_mlt.text == text
+True
+>>> norm_mlt.labels == labels
+True
+>>> tft = ToFastText(cache_labels=True)
+>>> to_mlt = tft.format(norm_mlt)
+>>> to_mlt.text == text
+True
+>>> to_mlt.labels == ft_labels_2
+True
+>>>
+>>> nft = Normalizer(cache_labels=True)
+>>> n_mlt = nft.format(norm_mlt)
+>>> n_mlt.text == text
+True
+>>> n_mlt.labels == norm_labels
+True
+
 """
 
 
 import re
-from util.prepro import normalize_label, normalize
+from common.prepro import normalize_label, normalize
 
 
 class MultiLabelText:
@@ -46,9 +88,9 @@ class MultiLabelText:
 
 
 class Formatter:
-    def __init__(self, cache_label=True):
-        self.cache_label = cache_label
-        if cache_label:
+    def __init__(self, cache_labels=True):
+        self.cache_labels = cache_labels
+        if cache_labels:
             self.cached_labels = {}
 
     @staticmethod
@@ -62,7 +104,7 @@ class Formatter:
     def format(self, mlt):
         for_mlt = MultiLabelText(self.format_text(mlt.text))
         for lab in mlt.labels:
-            if self.cache_label:
+            if self.cache_labels:
                 can_lab = self.cached_labels.get(lab)
                 if not can_lab:
                     can_lab = self.format_label(lab)
@@ -74,8 +116,8 @@ class Formatter:
 
 
 class FromFastText(Formatter):
-    def __init__(self, cache_label=True):
-        super(self.__class__, self).__init__(cache_label)
+    def __init__(self, cache_labels=True):
+        super(self.__class__, self).__init__(cache_labels)
 
     @staticmethod
     def format_label(label):
@@ -83,8 +125,8 @@ class FromFastText(Formatter):
 
 
 class ToFastText(Formatter):
-    def __init__(self, cache_label=True):
-        super(self.__class__, self).__init__(cache_label)
+    def __init__(self, cache_labels=True):
+        super(self.__class__, self).__init__(cache_labels)
 
     @staticmethod
     def format_label(label):
@@ -96,8 +138,8 @@ class ToFastText(Formatter):
 
 
 class Normalizer(Formatter):
-    def __init__(self, cache_label=True):
-        super(self.__class__, self).__init__(cache_label)
+    def __init__(self, cache_labels=True):
+        super(self.__class__, self).__init__(cache_labels)
 
     @staticmethod
     def format_label(label):

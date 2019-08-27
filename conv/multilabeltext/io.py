@@ -1,30 +1,96 @@
+# coding=utf-8
+# Copyright 2019 YAM AI Machinery Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from abc import ABC
 from conv.multilabeltext.formatter import MultiLabelText, FromFastText, Normalizer, Formatter, ToFastText
+from common.ex import YamconvError
 import sqlite3
+import logging
 
 
 class Converter:
-    def __init__(self, reader, from_formatter, writer, to_formatter):
+    def __init__(self, reader, from_formatter, writer, to_formatter,
+                 logger=None, log_level=logging.INFO, nlines=1000):
         self.reader = reader
         self.from_formatter = from_formatter
         self.writer = writer
         self.to_formatter = to_formatter
+        self.logger = logger
+        if self.logger:
+            self.logger.setLevel(log_level)
+        self.nlines = nlines
+
+    def info(self, msg):
+        if self.logger:
+            self.logger.info(msg)
+
+    def err(self, msg):
+        if self.logger:
+            self.logger.error(msg)
+        raise YamconvError(msg)
 
     def convert(self):
-        self.reader.open()
-        self.writer.open()
+        try:
+            self.reader.open()
+        except Exception as e:
+            self.err('Error opening input file {}: {}'.format(
+                self.reader.filepath, e))
+        self.info('Opened input file {}.'.format(self.reader.filepath))
+        try:
+            self.writer.open()
+        except Exception as e:
+            self.err('Error opening output file {}: {}'.format(
+                self.writer.filepath, e))
+        self.info('Opened output file {}.'.format(self.writer.filepath))
+        i = 0
         while True:
-            from_mlt = self.reader.read()
+            try:
+                from_mlt = self.reader.read()
+            except Exception as e:
+                self.err('Error reading input file {}: {}'.format(
+                    self.reader.filepath, e))
             if not from_mlt:
                 break
             norm_mlt = self.from_formatter.format(from_mlt)
             to_mlt = self.to_formatter.format(norm_mlt)
-            self.writer.write(to_mlt)
-        self.reader.close()
-        self.writer.close()
+            try:
+                self.writer.write(to_mlt)
+            except Exception as e:
+                self.err('Error writing output file {}: {}'.format(
+                    self.writer.filepath, e))
+            i += 1
+            if i % 1000 == 0:
+                self.info("Processed {} records.".format(i))
+        try:
+            self.reader.close()
+        except Exception as e:
+            self.err('Error closing input file {}: {}'.format(
+                self.reader.filepath, e))
+        self.info('Closed input file {}.'.format(self.reader.filepath))
+        try:
+            self.writer.close()
+        except Exception as e:
+            self.err('Error closing output file {}: {}'.format(
+                self.writer.filepath, e))
+        self.info('Closed output file {}.'.format(self.writer.filepath))
 
 
 class Reader(ABC):
+    def __init__(self, filepath):
+        self.filepath = filepath
+
     def open():
         pass
 
@@ -36,6 +102,9 @@ class Reader(ABC):
 
 
 class Writer(ABC):
+    def __init__(self, filepath):
+        self.filepath = filepath
+
     def open():
         pass
 
@@ -48,10 +117,10 @@ class Writer(ABC):
 
 class FastTextReader(Reader):
     def __init__(self, fasttext_path):
-        self.fasttext_path = fasttext_path
+        super(self.__class__, self).__init__(fasttext_path)
 
     def open(self):
-        self.fasttext_file = open(self.fasttext_path, 'r')
+        self.fasttext_file = open(self.filepath, 'r')
 
     def read(self):
         line = self.fasttext_file.readline()
@@ -78,13 +147,13 @@ class FastTextReader(Reader):
 
 class FastTextWriter(Writer):
     def __init__(self, fasttext_path):
-        self.fasttext_path = fasttext_path
+        super(self.__class__, self).__init__(fasttext_path)
 
     def open(self):
-        self.fasttext_file = open(self.fasttext_path, 'w')
+        self.fasttext_file = open(self.filepath, 'w')
 
     def write(self, mlt):
-        print(' '.join(mlt.labels + [mlt.text]), file=self.fasttext_file)
+        print(' '.join(list(mlt.labels) + [mlt.text]), file=self.fasttext_file)
 
     def close(self):
         self.fasttext_file.close()
@@ -92,10 +161,10 @@ class FastTextWriter(Writer):
 
 class SQLiteReader(Reader):
     def __init__(self, sqlite_path):
-        self.sqlite_path = sqlite_path
+        super(self.__class__, self).__init__(sqlite_path)
 
     def open(self):
-        self.conn = sqlite3.connect(self.sqlite_path)
+        self.conn = sqlite3.connect(self.filepath)
         self.cur = self.conn.cursor()
         self.cur.execute('SELECT id FROM texts')
         rows = self.cur.fetchall()
@@ -104,7 +173,7 @@ class SQLiteReader(Reader):
     def read(self):
         try:
             text_id = self.text_ids.pop()
-        except TypeError:
+        except:
             return None
         self.cur.execute('SELECT text FROM texts WHERE id = ?', (text_id, ))
         mlt = MultiLabelText(self.cur.fetchone()[0])
@@ -139,20 +208,22 @@ schema = '''
 
 class SQLiteWriter(Writer):
     def __init__(self, sqlite_path):
-        self.sqlite_path = sqlite_path
+        super(self.__class__, self).__init__(sqlite_path)
 
     def open(self):
-        self.conn = sqlite3.connect(self.sqlite_path)
+        self.conn = sqlite3.connect(self.filepath)
         self.cur = self.conn.cursor()
         self.cur.executescript(schema)
         self.text_id = 0
 
     def write(self, mlt):
         self.cur.execute(
-            'INSERT INTO texts (id, text) VALUES (?, ?)', (text_id, mlt.text))
+            'INSERT INTO texts (id, text) VALUES (?, ?)', (self.text_id, mlt.text))
         for label in mlt.labels:
             self.cur.execute(
-                'INSERT INTO labels (label, text_id) VALUES (?, ?)', (text_id, label))
+                'INSERT INTO labels (label, text_id) VALUES (?, ?)', (self.text_id, label))
+        self.text_id += 1
+        self.conn.commit()
 
     def close(self):
         self.conn.commit()
@@ -160,20 +231,22 @@ class SQLiteWriter(Writer):
 
 
 class FastText2SQLite(Converter):
-    def __init__(self, fasttext_path, sqlite_path, cache_label=True):
+    def __init__(self, fasttext_path, sqlite_path, cache_labels=True,
+                 logger=None, log_level=logging.INFO, nlines=1000):
         reader = FastTextReader(fasttext_path)
-        from_formatter = FromFastText(cache_label=cache_label)
+        from_formatter = FromFastText(cache_labels=cache_labels)
         writer = SQLiteWriter(sqlite_path)
-        to_formatter = Normalizer(cache_label=cache_label)
+        to_formatter = Normalizer(cache_labels=cache_labels)
         super(self.__class__, self).__init__(
-            reader, from_formatter, writer, to_formatter)
+            reader, from_formatter, writer, to_formatter, logger, log_level, nlines)
 
 
 class SQLite2FastText(Converter):
-    def __init__(self, sqlite_path, fasttext_path, cache_label=True):
+    def __init__(self, sqlite_path, fasttext_path, cache_labels=True,
+                 logger=None, log_level=logging.INFO, nlines=1000):
         reader = SQLiteReader(sqlite_path)
-        from_formatter = Formatter(cache_label=cache_label)
+        from_formatter = Formatter(cache_labels=cache_labels)
         writer = FastTextWriter(fasttext_path)
-        to_formatter = ToFastText(cache_label=cache_label)
+        to_formatter = ToFastText(cache_labels=cache_labels)
         super(self.__class__, self).__init__(
-            reader, from_formatter, writer, to_formatter)
+            reader, from_formatter, writer, to_formatter, logger, log_level, nlines)
