@@ -14,10 +14,11 @@
 # limitations under the License.
 
 from abc import ABC
-from conv.multilabeltext.formatter import MultiLabelText, FromFastText, Normalizer, Formatter, ToFastText
+from mlt.formatter import MultiLabelText, FromFastText, Normalizer, Formatter, ToFastText
 from common.ex import YamconvError
 import sqlite3
 import logging
+import os
 
 
 class Converter:
@@ -72,7 +73,8 @@ class Converter:
                     self.writer.filepath, e))
             i += 1
             if i % 1000 == 0:
-                self.info("Processed {} records.".format(i))
+                self.info('Processed {} records.'.format(i))
+        self.info('Completed processing {} records in total.'.format(i))
         try:
             self.reader.close()
         except Exception as e:
@@ -120,6 +122,9 @@ class FastTextReader(Reader):
         super(self.__class__, self).__init__(fasttext_path)
 
     def open(self):
+        if not os.path.isfile(self.filepath):
+            raise YamconvError(
+                'Input file {} does not exists.'.format(self.filepath))
         self.fasttext_file = open(self.filepath, 'r')
 
     def read(self):
@@ -164,6 +169,9 @@ class SQLiteReader(Reader):
         super(self.__class__, self).__init__(sqlite_path)
 
     def open(self):
+        if not os.path.isfile(self.filepath):
+            raise YamconvError(
+                'Input file {} does not exists.'.format(self.filepath))
         self.conn = sqlite3.connect(self.filepath)
         self.cur = self.conn.cursor()
         self.cur.execute('SELECT id FROM texts')
