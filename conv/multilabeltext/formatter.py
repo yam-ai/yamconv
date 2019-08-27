@@ -27,50 +27,82 @@ True
 
 
 import re
-from util.prepro import normalize_label
+from util.prepro import normalize_label, normalize
 
 
 class MultiLabelText:
-    def __init__(self, text):
+    def __init__(self, text=''):
         self.text = text
         self.labels = set()
+
+    def set_text(self, text):
+        self.text = text
+
+    def add_word(self, word):
+        self.text += (' ' + word)
 
     def add_label(self, label):
         self.labels.add(label)
 
 
-class Canonicalizer:
+class Formatter:
     def __init__(self, cache_label=True):
         self.cache_label = cache_label
         if cache_label:
             self.cached_labels = {}
 
     @staticmethod
-    def canonicalize_label(label):
+    def format_label(label):
         return label
 
     @staticmethod
-    def canonicalize_text(text):
+    def format_text(text):
         return text
 
-    def canonicalize(self, mlt):
-        can_mlt = MultiLabelText(self.canonicalize_text(mlt.text))
+    def format(self, mlt):
+        for_mlt = MultiLabelText(self.format_text(mlt.text))
         for lab in mlt.labels:
             if self.cache_label:
                 can_lab = self.cached_labels.get(lab)
-                if can_lab:
-                    can_lab = self.canonicalize_label(lab)
+                if not can_lab:
+                    can_lab = self.format_label(lab)
                 self.cached_labels[lab] = can_lab
             else:
-                can_lab = self.canonicalize_label(lab)
-            can_mlt.add_label(can_lab)
-        return can_mlt
+                can_lab = self.format_label(lab)
+            for_mlt.add_label(can_lab)
+        return for_mlt
 
 
-class FastTextCanonicalizer(Canonicalizer):
+class FromFastText(Formatter):
     def __init__(self, cache_label=True):
         super(self.__class__, self).__init__(cache_label)
 
     @staticmethod
-    def canonicalize_label(label):
-        return normalize(re.sub(r'^__label__', '', label))
+    def format_label(label):
+        return re.sub(r'^__label__', '', label)
+
+
+class ToFastText(Formatter):
+    def __init__(self, cache_label=True):
+        super(self.__class__, self).__init__(cache_label)
+
+    @staticmethod
+    def format_label(label):
+        return '__label__' + normalize_label(label)
+
+    @staticmethod
+    def format_text(text):
+        return normalize(text)
+
+
+class Normalizer(Formatter):
+    def __init__(self, cache_label=True):
+        super(self.__class__, self).__init__(cache_label)
+
+    @staticmethod
+    def format_label(label):
+        return normalize_label(label)
+
+    @staticmethod
+    def format_text(text):
+        return normalize(text)
