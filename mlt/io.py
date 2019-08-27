@@ -73,7 +73,8 @@ class Converter:
                     self.writer.filepath, e))
             i += 1
             if i % 1000 == 0:
-                self.info("Processed {} records.".format(i))
+                self.info('Processed {} records.'.format(i))
+        self.info('Completed processing {} records in total.'.format(i))
         try:
             self.reader.close()
         except Exception as e:
