@@ -2,7 +2,7 @@
 
 `yamconv` coverts a machine learning dataset from one format to another format.
 
-## Installtion
+## Installation
 
 `yamconv` is published on [PyPI](https://pypi.org/project/yamconv/). You can install `yamconv` using pip as follows:
 
@@ -53,7 +53,7 @@ __label__region __label_plant The Netherlands is the productoin center for the E
 
 #### SQLite database
 
-A [SQLite](https://www.sqlite.org) database is used to store the classifications of texts. 
+A [SQLite](https://www.sqlite.org) database is used to store the classifications of texts.
 The database schema is as follows:
 
 ```SQL
@@ -70,14 +70,15 @@ CREATE INDEX IF NOT EXISTS label_index ON labels (label);
 CREATE INDEX IF NOT EXISTS text_id_index ON labels (text_id);
 ```
 
-The `texts` table contains the text contents using the `text` field and 
-each row is uniquely identified by field `id`.
-The `labels` table contains all labels in the `label` field.
-Each row has a foreign key field `text_id` that links the label to the text in the `texts` table,
-which is classified with that label.
-In other words, each row in `text` is associated with zero or more rows in `labels`.
+The `texts` table contains the text contents in the `text` field,
+and each row is uniquely identified by the `id` field.
+The `labels` table contains the labels in the `label` field.
+Each row has a `text_id` foreign key that links the label to the text in the `texts` table,
+where the text is classified with the label.
+In other words, each row in `texts` is associated with zero or more rows in `labels`.
 
 ## Profesional services
+
 If you need any supporting resources or consultancy services from YAM AI Machinery, please find us at:
 
 * https://www.yam.ai
