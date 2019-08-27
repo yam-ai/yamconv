@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from abc import ABC
-from conv.multilabeltext.formatter import MultiLabelText, FromFastText, Normalizer, Formatter, ToFastText
+from mlt.formatter import MultiLabelText, FromFastText, Normalizer, Formatter, ToFastText
 from common.ex import YamconvError
 import sqlite3
 import logging

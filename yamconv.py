@@ -16,11 +16,14 @@
 import sys
 import getopt
 import logging
-from conv.multilabeltext.io import FastText2SQLite, SQLite2FastText
+from mlt.io import FastText2SQLite, SQLite2FastText
 from common.ex import YamconvError
 
 NUM_LINES = 1000
 CACHE_LABELS = True
+
+MLT_FASTTEXT_TO_SQLITE = 'mlt.fasttext2sqlite'
+MLT_SQLITE_TO_FASTTEXT = 'mlt.sqlite2fasttext'
 
 
 def main(argv):
@@ -45,21 +48,29 @@ def main(argv):
     except Exception as e:
         usage(progname, e)
     logger = get_logger(log_level)
-    if convert == 'fasttext2sqlite':
-        converter = FastText2SQLite(
-            infile, outfile, cache_labels=CACHE_LABELS,
-            logger=logger, log_level=log_level, nlines=NUM_LINES)
-    elif convert == 'sqlite2fasttext':
-        converter = SQLite2FastText(
-            infile, outfile, cache_labels=CACHE_LABELS,
-            logger=logger, log_level=log_level, nlines=NUM_LINES)
-    else:
+    converter = get_converter(
+        convert, infile, outfile,
+        CACHE_LABELS, logger, log_level, NUM_LINES)
+    if not converter:
         usage(progname,
               Exception('Unknown converter name {}'.format(convert)))
     try:
         converter.convert()
     except YamconvError as e:
         print('Failed to convert data: {}'.format(e), file=sys.stderr)
+
+
+def get_converter(name, infile, outfile, cache_labels, logger, log_level, nlines):
+    converter = None
+    if name == MLT_FASTTEXT_TO_SQLITE:
+        converter = FastText2SQLite(
+            infile, outfile, cache_labels=CACHE_LABELS,
+            logger=logger, log_level=log_level, nlines=nlines)
+    elif name == MLT_SQLITE_TO_FASTTEXT:
+        converter = SQLite2FastText(
+            infile, outfile, cache_labels=CACHE_LABELS,
+            logger=logger, log_level=log_level, nlines=nlines)
+    return converter
 
 
 def get_logger(log_level):
@@ -76,7 +87,7 @@ def get_logger(log_level):
 
 
 def usage(progname, e=None):
-    converter_names = ['fasttext2sqlite', 'sqlite2fasttext']
+    converter_names = [MLT_FASTTEXT_TO_SQLITE, MLT_SQLITE_TO_FASTTEXT]
     print('Usage: {} -c converter_name -i input_file -o ouput_file -v'.format(progname),
           file=sys.stderr)
     print('-c: converter name', file=sys.stderr)
