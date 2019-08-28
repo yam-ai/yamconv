@@ -69,7 +69,7 @@ True
 
 
 import re
-from common.prepro import normalize_label, normalize
+from common.prepro import normalize_label, normalize_text
 
 
 class MultiLabelText:
