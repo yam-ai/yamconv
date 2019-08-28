@@ -19,20 +19,29 @@ pip install .
 ## Usage
 
 ```sh
-python3 yamconv.py -c converter_name -i input_file -o ouput_file -v
+python3 yamconv.py -c converter -i input_file -o ouput_file -s settings -v
 ```
 
-* `-c`: converter name
+* `-c`: converter
 * `-i`: input file path
 * `-o`: output file path
+* `-s`: converter settings in JSON
 * `-v`: verbose
 
 ## Supported converters
 
 The following are the supported converters:
 
-* `fasttext2sqlite`: fastText text file to SQLite database file
-* `sqlite2fasttext`: SQLite database file to fastText text file
+* `mlt.fasttext2sqlite`: fastText text file to SQLite database file
+* `mlt.sqlite2fasttext`: SQLite database file to fastText text file
+
+### Settings
+
+Settings for converters are given in the `-s` option as a JSON string, e.g., `'{"cache_labels": true}'`.
+
+| Setting | Values | Description | Applicable converters |
+|---------|--------|-------------|-----------------------|
+| `cache_label`	| `true` (default), `false` | When `cache_label` is `true`, the reformatting of the labels is cached in memory. It can be set to `false` if there is insufficient memory to cache a huge number of different labels in the dataset. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext` |
 
 ## Supported dataset formats
 

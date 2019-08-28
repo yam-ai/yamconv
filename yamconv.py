@@ -16,6 +16,7 @@
 import sys
 import getopt
 import logging
+from json import loads
 from mlt.io import FastText2SQLite, SQLite2FastText
 from common.ex import YamconvError
 
@@ -29,9 +30,9 @@ MLT_SQLITE_TO_FASTTEXT = 'mlt.sqlite2fasttext'
 def main(argv):
     progname = argv[0]
     log_level = logging.WARN
-    infile, outfile, convert = None, None, None
+    infile, outfile, convert, settings = None, None, None, None
     try:
-        opts, _ = getopt.getopt(argv[1:], 'i:o:c:v')
+        opts, _ = getopt.getopt(argv[1:], 'i:o:c:s:v')
         for opt, arg in opts:
             if opt == '-i':
                 infile = arg
@@ -42,6 +43,11 @@ def main(argv):
             if opt == '-c':
                 convert = arg
                 continue
+            if opt == '-s':
+                try:
+                    settings = loads(arg)
+                except Exception as e:
+                    raise Exception("-s settings not in JSON")
             if opt == '-v':
                 log_level = logging.INFO
                 continue
@@ -54,9 +60,12 @@ def main(argv):
     if not convert:
         err(progname, Exception('-c is missing'))
     logger = get_logger(log_level)
-    converter = get_converter(
-        convert, infile, outfile,
-        CACHE_LABELS, logger, log_level, NUM_LINES)
+    try:
+        converter = get_converter(
+            convert, infile, outfile,
+            settings, logger, NUM_LINES)
+    except Exception as e:
+        err(progname, e)
     if not converter:
         err(progname,
             Exception('Unknown converter name {}'.format(convert)))
@@ -66,16 +75,22 @@ def main(argv):
         print('Failed to convert data: {}'.format(e), file=sys.stderr)
 
 
-def get_converter(name, infile, outfile, cache_labels, logger, log_level, nlines):
+def get_converter(name, infile, outfile, settings, logger, nlines):
     converter = None
+    if settings is not None:
+        cache_labels = settings.get('cache_labels')
+        if cache_labels not in [True, False]:
+            raise YamconvError('cache_labels must be true or false')
+        if cache_labels is not None:
+            logger.info('cache_labels = {}'.format(cache_labels))
     if name == MLT_FASTTEXT_TO_SQLITE:
         converter = FastText2SQLite(
             infile, outfile, cache_labels=CACHE_LABELS,
-            logger=logger, log_level=log_level, nlines=nlines)
+            logger=logger, nlines=nlines)
     elif name == MLT_SQLITE_TO_FASTTEXT:
         converter = SQLite2FastText(
             infile, outfile, cache_labels=CACHE_LABELS,
-            logger=logger, log_level=log_level, nlines=nlines)
+            logger=logger, nlines=nlines)
     return converter
 
 
@@ -94,11 +109,12 @@ def get_logger(log_level):
 
 def err(progname, e=None):
     converter_names = [MLT_FASTTEXT_TO_SQLITE, MLT_SQLITE_TO_FASTTEXT]
-    print('Usage: {} -c converter_name -i input_file -o ouput_file -v'.format(progname),
+    print('Usage: {} -c converter -i input_file -o ouput_file -s settings -v'.format(progname),
           file=sys.stderr)
     print('-c: converter name', file=sys.stderr)
     print('-i: input file path', file=sys.stderr)
     print('-o: output file path', file=sys.stderr)
+    print('-s: converter settings in JSON', file=sys.stderr)
     print('-v: verbose', file=sys.stderr)
     print('Supported converters: {}'.format(
         ', '.join(converter_names)), file=sys.stderr)
