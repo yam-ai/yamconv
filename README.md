@@ -22,11 +22,11 @@ pip install .
 yamconv.py -c converter -i input_file -o ouput_file -s settings -v
 ```
 
-* `-c`: converter
+* `-c`: converter name
 * `-i`: input file path
 * `-o`: output file path
 * `-s`: converter settings in JSON
-* `-v`: verbose
+* `-v`: verbose, to display the processing progress and information
 
 ## Supported converters
 
