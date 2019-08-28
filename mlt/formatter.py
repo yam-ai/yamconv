@@ -134,7 +134,7 @@ class ToFastText(Formatter):
 
     @staticmethod
     def format_text(text):
-        return normalize(text)
+        return normalize_text(text)
 
 
 class Normalizer(Formatter):
@@ -147,4 +147,4 @@ class Normalizer(Formatter):
 
     @staticmethod
     def format_text(text):
-        return normalize(text)
+        return normalize_text(text)

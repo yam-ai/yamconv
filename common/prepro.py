@@ -17,16 +17,9 @@
 >>> s = u'''世界，你好！
 ... Hello, World!
 ... Hëllo, Wôrld!'''
->>> t = remove_symbols(s)
->>> t == u'世界 你好  Hello  World  Hëllo  Wôrld '
-True
->>> u = tokenize_unicode_chars(t)
->>> u == ' 世  界   你  好   Hello  World  Hëllo  Wôrld '
-True
->>> v = compact_spaces(u)
->>> v == u'世 界 你 好 Hello World Hëllo Wôrld'
-True
->>> normalize(s)
+>>> remove_symbols(s)
+'世界 你好  Hello  World  Hëllo  Wôrld '
+>>> normalize_text(s)
 '世 界 你 好 hello world hëllo wôrld'
 >>> normalize_label(s)
 '世界_你好_hello_world_hëllo_wôrld'
@@ -39,24 +32,30 @@ def remove_symbols(s):
     return re.sub(r'[^\w]', ' ', s, flags=re.UNICODE)
 
 
-def tokenize_unicode_chars(s):
-    t = ''
+def normalize(s, split_unichars=False, to_lower=True, delimiter=' '):
     words = []
+    word = []
     for c in s:
-        if ord(c) <= 255:
-            t += c
+        if c == ' ':
+            if word:
+                words.append(''.join(word))
+                word = []
         else:
-            t += (' ' + c + ' ')
-    return t
+            if split_unichars and ord(c) > 255:
+                if word:
+                    words.append(''.join(word))
+                words.append(c)
+                word = []
+                continue
+            if to_lower:
+                c = c.lower()
+            word.append(c)
+    return delimiter.join(words)
 
 
-def compact_spaces(s):
-    return ' '.join(s.split())
-
-
-def normalize(s):
-    return compact_spaces(tokenize_unicode_chars(remove_symbols(s))).lower()
+def normalize_text(s):
+    return normalize(remove_symbols(s), split_unichars=True)
 
 
 def normalize_label(s):
-    return '_'.join(compact_spaces(remove_symbols(s)).lower().split())
+    return normalize(remove_symbols(s), delimiter='_')
