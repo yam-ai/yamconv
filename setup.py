@@ -24,5 +24,7 @@ setup(
     author_email='thomaslee@yam.ai',
     pymodule='yamconv',
     include_page_data=True,
-    zip_safe=True
+    zip_safe=True,
+    scripts=['yamconv.py'],
+    packages=['mlt', 'common'],
 )

@@ -19,7 +19,7 @@ pip install .
 ## Usage
 
 ```sh
-python3 yamconv.py -c converter -i input_file -o ouput_file -s settings -v
+yamconv.py -c converter -i input_file -o ouput_file -s settings -v
 ```
 
 * `-c`: converter
@@ -55,7 +55,7 @@ A line starts with multiple labels, followed by the text content.
 Each label is marked with the `__label__` prefix and the labels are separated by a space.
 The following is a fragment of an example fastText dataset file:
 
-```
+```text
 __label__food __label__region Dimsum is popular in Hong Kong restaurants.
 __label__region __label__plant __label__business The Netherlands is center of the production for the European floral market.
 ```
