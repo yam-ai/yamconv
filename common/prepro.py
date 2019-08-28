@@ -15,18 +15,21 @@
 
 """This module contains functions to clean and tokenize text.
 >>> s = u'''世界，你好！
-... Hello, World!'''
+... Hello, World!
+... Hëllo, Wôrld!'''
 >>> t = remove_symbols(s)
->>> t == u'世界 你好  Hello  World '
+>>> t == u'世界 你好  Hello  World  Hëllo  Wôrld '
 True
 >>> u = tokenize_unicode_chars(t)
->>> u == '世 界   你 好     Hello    World  '
+>>> u == ' 世  界   你  好   Hello  World  Hëllo  Wôrld '
 True
 >>> v = compact_spaces(u)
->>> v == u'世 界 你 好 Hello World'
+>>> v == u'世 界 你 好 Hello World Hëllo Wôrld'
 True
 >>> normalize(s)
-'世 界 你 好 hello world'
+'世 界 你 好 hello world hëllo wôrld'
+>>> normalize_label(s)
+'世界_你好_hello_world_hëllo_wôrld'
 """
 
 import re
@@ -37,7 +40,14 @@ def remove_symbols(s):
 
 
 def tokenize_unicode_chars(s):
-    return re.sub(r'([^A-Za-z])', '\\1 ', s, flags=re.UNICODE)
+    t = ''
+    words = []
+    for c in s:
+        if ord(c) <= 255:
+            t += c
+        else:
+            t += (' ' + c + ' ')
+    return t
 
 
 def compact_spaces(s):
