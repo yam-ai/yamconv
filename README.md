@@ -41,7 +41,7 @@ Settings for converters are given in the `-s` option as a JSON string, e.g., `'{
 
 | Setting | Values | Description | Applicable converters |
 |---------|--------|-------------|-----------------------|
-| `cache_labels` | `true` (default), `false` | When `cache_label` is `true`, the reformatting of the labels is cached in memory. It can be set to `false` if there is insufficient memory to cache a huge number of different labels in the dataset. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext` |
+| `cache_labels` | `true` (default), `false` | When `cache_labels` is `true`, the reformatting of the labels is cached in memory. It can be set to `false` if there is insufficient memory to cache a huge number of different labels in the dataset. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext` |
 
 ## Supported dataset formats
 
