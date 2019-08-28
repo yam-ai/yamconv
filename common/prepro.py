@@ -49,4 +49,4 @@ def normalize(s):
 
 
 def normalize_label(s):
-    return '_'.join(compact_spaces(tokenize_unicode_chars(remove_symbols(s))).lower().split())
+    return '_'.join(compact_spaces(remove_symbols(s))).lower().split()
