@@ -23,14 +23,12 @@ import os
 
 class Converter:
     def __init__(self, reader, from_formatter, writer, to_formatter,
-                 logger=None, log_level=logging.INFO, nlines=1000):
+                 logger=None, nlines=1000):
         self.reader = reader
         self.from_formatter = from_formatter
         self.writer = writer
         self.to_formatter = to_formatter
         self.logger = logger
-        if self.logger:
-            self.logger.setLevel(log_level)
         self.nlines = nlines
 
     def info(self, msg):
@@ -220,6 +218,8 @@ class SQLiteWriter(Writer):
 
     def open(self):
         self.conn = sqlite3.connect(self.filepath)
+        # Can use autocommit for faster performance
+        # self.conn.isolation_level = None
         self.cur = self.conn.cursor()
         self.cur.executescript(schema)
         self.text_id = 0
@@ -230,8 +230,8 @@ class SQLiteWriter(Writer):
         for label in mlt.labels:
             self.cur.execute(
                 'INSERT INTO labels (label, text_id) VALUES (?, ?)', (self.text_id, label))
+        self.conn.commit()  # Can omit this commit for autocommit
         self.text_id += 1
-        self.conn.commit()
 
     def close(self):
         self.conn.commit()
@@ -240,21 +240,21 @@ class SQLiteWriter(Writer):
 
 class FastText2SQLite(Converter):
     def __init__(self, fasttext_path, sqlite_path, cache_labels=True,
-                 logger=None, log_level=logging.INFO, nlines=1000):
+                 logger=None, nlines=1000):
         reader = FastTextReader(fasttext_path)
         from_formatter = FromFastText(cache_labels=cache_labels)
         writer = SQLiteWriter(sqlite_path)
         to_formatter = Normalizer(cache_labels=cache_labels)
         super(self.__class__, self).__init__(
-            reader, from_formatter, writer, to_formatter, logger, log_level, nlines)
+            reader, from_formatter, writer, to_formatter, logger, nlines)
 
 
 class SQLite2FastText(Converter):
     def __init__(self, sqlite_path, fasttext_path, cache_labels=True,
-                 logger=None, log_level=logging.INFO, nlines=1000):
+                 logger=None, nlines=1000):
         reader = SQLiteReader(sqlite_path)
         from_formatter = Formatter(cache_labels=cache_labels)
         writer = FastTextWriter(fasttext_path)
         to_formatter = ToFastText(cache_labels=cache_labels)
         super(self.__class__, self).__init__(
-            reader, from_formatter, writer, to_formatter, logger, log_level, nlines)
+            reader, from_formatter, writer, to_formatter, logger, nlines)

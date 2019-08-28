@@ -19,20 +19,29 @@ pip install .
 ## Usage
 
 ```sh
-yamconv -c converter_name -i input_file -o ouput_file -v
+yamconv.py -c converter -i input_file -o ouput_file -s settings -v
 ```
 
 * `-c`: converter name
 * `-i`: input file path
 * `-o`: output file path
-* `-v`: verbose
+* `-s`: converter settings in JSON
+* `-v`: verbose, to display the processing progress and information
 
 ## Supported converters
 
 The following are the supported converters:
 
-* `fasttext2sqlite`: fastText text file to SQLite database file
-* `sqlite2fasttext`: SQLite database file to fastText text file
+* `mlt.fasttext2sqlite`: fastText text file to SQLite database file
+* `mlt.sqlite2fasttext`: SQLite database file to fastText text file
+
+### Settings
+
+Settings for converters are given in the `-s` option as a JSON string, e.g., `'{"cache_labels": true}'`.
+
+| Setting | Values | Description | Applicable converters |
+|---------|--------|-------------|-----------------------|
+| `cache_labels` | `true` (default), `false` | When `cache_labels` is `true`, the reformatting of the labels is cached in memory. It can be set to `false` if there is insufficient memory to cache a huge number of different labels in the dataset. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext` |
 
 ## Supported dataset formats
 
@@ -46,9 +55,9 @@ A line starts with multiple labels, followed by the text content.
 Each label is marked with the `__label__` prefix and the labels are separated by a space.
 The following is a fragment of an example fastText dataset file:
 
-```
-__label__food __label__region Dimsum is popular in Hong Kong restaurants.
-__label__region __label__plant __label__business The Netherlands is center of the production for the European floral market.
+```text
+__label__food __label__region Many people love having dim sum in Hong Kong restaurants.
+__label__region __label__plant __label__business The Netherlands is the major supplier to the European floral market.
 ```
 
 #### SQLite database

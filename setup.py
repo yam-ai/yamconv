@@ -8,7 +8,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='yamconv',
-    version='0.1.2',
+    version='0.1.3',
     description='yamconv converts the file formats of machine learning datasets',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -24,5 +24,7 @@ setup(
     author_email='thomaslee@yam.ai',
     pymodule='yamconv',
     include_page_data=True,
-    zip_safe=True
+    zip_safe=True,
+    scripts=['yamconv.py'],
+    packages=['mlt', 'common'],
 )
