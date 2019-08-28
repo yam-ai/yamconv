@@ -98,7 +98,7 @@ def get_logger(log_level):
     ch = logging.StreamHandler()
     ch.setFormatter(
         logging.Formatter(
-            '[%(asctime)s] [%(process)d] [%(levelname)s] %(message)s',
+            '[%(asctime)s|%(levelname)s] %(message)s',
             '%Y-%m-%d %H:%M:%S %z')
     )
     logger = logging.getLogger(__name__)
