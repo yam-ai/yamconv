@@ -26,20 +26,20 @@
 True
 >>> mlt.labels == ft_labels_1
 True
->>> fft = FromFastText()
+>>> fft = FromFastText(cache_labels=True)
 >>> norm_mlt = fft.format(mlt)
 >>> norm_mlt.text == text
 True
 >>> norm_mlt.labels == labels
 True
->>> tft = ToFastText()
+>>> tft = ToFastText(normalize_labels=True, normalize_texts=True, cache_labels=True)
 >>> to_mlt = tft.format(norm_mlt)
 >>> to_mlt.text == text
 True
 >>> to_mlt.labels == ft_labels_2
 True
 >>>
->>> nft = Normalizer()
+>>> nft = Normalizer(normalize_labels=True, normalize_texts=True, cache_labels=False)
 >>> n_mlt = nft.format(norm_mlt)
 >>> n_mlt.text == text
 True
@@ -51,14 +51,14 @@ True
 True
 >>> norm_mlt.labels == labels
 True
->>> tft = ToFastText(cache_labels=True)
+>>> tft = ToFastText(normalize_labels=True, normalize_texts = True, cache_labels=True)
 >>> to_mlt = tft.format(norm_mlt)
 >>> to_mlt.text == text
 True
 >>> to_mlt.labels == ft_labels_2
 True
 >>>
->>> nft = Normalizer(cache_labels=True)
+>>> nft = Normalizer(normalize_labels=True, normalize_texts=True, cache_labels=False)
 >>> n_mlt = nft.format(norm_mlt)
 >>> n_mlt.text == text
 True
@@ -69,7 +69,7 @@ True
 
 
 import re
-from common.prepro import normalize_label, normalize
+from common.prepro import normalize_label, normalize_text
 
 
 class MultiLabelText:
@@ -88,17 +88,15 @@ class MultiLabelText:
 
 
 class Formatter:
-    def __init__(self, cache_labels=True):
+    def __init__(self, cache_labels=False):
         self.cache_labels = cache_labels
         if cache_labels:
             self.cached_labels = {}
 
-    @staticmethod
-    def format_label(label):
+    def format_label(self, label):
         return label
 
-    @staticmethod
-    def format_text(text):
+    def format_text(self, text):
         return text
 
     def format(self, mlt):
@@ -116,35 +114,40 @@ class Formatter:
 
 
 class FromFastText(Formatter):
-    def __init__(self, cache_labels=True):
+    def __init__(self, cache_labels=False):
         super(self.__class__, self).__init__(cache_labels)
 
-    @staticmethod
-    def format_label(label):
+    def format_label(self, label):
         return re.sub(r'^__label__', '', label)
 
 
 class ToFastText(Formatter):
-    def __init__(self, cache_labels=True):
+    def __init__(self,
+                 normalize_labels,
+                 normalize_texts,
+                 cache_labels=False):
+        self.normalize_labels = normalize_labels
+        self.normalize_texts = normalize_texts
         super(self.__class__, self).__init__(cache_labels)
 
-    @staticmethod
-    def format_label(label):
-        return '__label__' + normalize_label(label)
+    def format_label(self, label):
+        return '__label__' + normalize_label(label, self.normalize_labels)
 
-    @staticmethod
-    def format_text(text):
-        return normalize(text)
+    def format_text(self, text):
+        return normalize_text(text, self.normalize_texts)
 
 
 class Normalizer(Formatter):
-    def __init__(self, cache_labels=True):
+    def __init__(self,
+                 normalize_labels,
+                 normalize_texts,
+                 cache_labels=False):
+        self.normalize_labels = normalize_labels
+        self.normalize_texts = normalize_text
         super(self.__class__, self).__init__(cache_labels)
 
-    @staticmethod
-    def format_label(label):
-        return normalize_label(label)
+    def format_label(self, label):
+        return normalize_label(label, self.normalize_labels)
 
-    @staticmethod
-    def format_text(text):
-        return normalize(text)
+    def format_text(self, text):
+        return normalize_text(text, self.normalize_texts)
