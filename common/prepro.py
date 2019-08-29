@@ -19,10 +19,14 @@
 ... Hëllo, Wôrld!'''
 >>> remove_symbols(s)
 '世界 你好  Hello  World  Hëllo  Wôrld '
->>> normalize_text(s)
+>>> normalize_text(s, True)
 '世 界 你 好 hello world hëllo wôrld'
->>> normalize_label(s)
+>>> normalize_text(s, False)
+'世界，你好！ Hello, World! Hëllo, Wôrld!'
+>>> normalize_label(s, True)
 '世界_你好_hello_world_hëllo_wôrld'
+>>> normalize_label(s, False)
+'世界，你好！_Hello,_World!_Hëllo,_Wôrld!'
 """
 
 import re
@@ -50,12 +54,18 @@ def normalize(s, split_unichars=False, to_lower=True, delimiter=' '):
             if to_lower:
                 c = c.lower()
             word.append(c)
+    if word:
+        words.append(''.join(word))
     return delimiter.join(words)
 
 
-def normalize_text(s):
-    return normalize(remove_symbols(s), split_unichars=True)
+def normalize_text(s, is_norm):
+    if is_norm:
+        return normalize(remove_symbols(s), split_unichars=True)
+    return ' '.join(s.split())
 
 
-def normalize_label(s):
-    return normalize(remove_symbols(s), delimiter='_')
+def normalize_label(s, is_norm):
+    if is_norm:
+        return normalize(remove_symbols(s), delimiter='_')
+    return '_'.join(s.split())

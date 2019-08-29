@@ -22,8 +22,9 @@ from mlt.io import FastText2SQLite, SQLite2FastText
 from common.ex import YamconvError
 
 NUM_LINES = 1000
-CACHE_LABELS = True
-
+CACHE_LABELS = False
+NORMALIZE_LABELS = True
+NORMALIZE_TEXTS = True
 MLT_FASTTEXT_TO_SQLITE = 'mlt.fasttext2sqlite'
 MLT_SQLITE_TO_FASTTEXT = 'mlt.sqlite2fasttext'
 
@@ -78,21 +79,42 @@ def main(argv):
 
 def get_converter(name, infile, outfile, settings, logger, nlines):
     converter = None
-    if settings is not None:
-        cache_labels = settings.get('cache_labels')
-        if cache_labels not in [True, False]:
-            raise YamconvError('cache_labels must be true or false')
-        if cache_labels is not None:
-            logger.info('cache_labels = {}'.format(cache_labels))
+    cache_labels = get_boolean_setting(
+        settings, 'cache_labels', CACHE_LABELS,
+        logger)
+    normalize_labels = get_boolean_setting(
+        settings, 'normalize_labels', NORMALIZE_LABELS,
+        logger)
+    normalize_texts = get_boolean_setting(
+        settings, 'normalize_texts', NORMALIZE_TEXTS,
+        logger)
     if name == MLT_FASTTEXT_TO_SQLITE:
         converter = FastText2SQLite(
-            infile, outfile, cache_labels=CACHE_LABELS,
+            infile, outfile,
+            normalize_labels=normalize_labels,
+            normalize_texts=normalize_texts,
+            cache_labels=cache_labels,
             logger=logger, nlines=nlines)
     elif name == MLT_SQLITE_TO_FASTTEXT:
         converter = SQLite2FastText(
-            infile, outfile, cache_labels=CACHE_LABELS,
+            infile, outfile,
+            normalize_labels=normalize_labels,
+            normalize_texts=normalize_texts,
+            cache_labels=cache_labels,
             logger=logger, nlines=nlines)
     return converter
+
+
+def get_boolean_setting(settings, key, default, logger):
+    if not settings:
+        return default
+    value = settings.get(key)
+    if value is None:
+        return default
+    if value not in [True, False]:
+        raise YamconvError('{} must be true or false'.format(key))
+    logger.info('{} = {}'.format(key, value))
+    return value
 
 
 def get_logger(log_level):

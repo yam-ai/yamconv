@@ -41,7 +41,9 @@ Settings for converters are given in the `-s` option as a JSON string, e.g., `'{
 
 | Setting | Values | Description | Applicable converters |
 |---------|--------|-------------|-----------------------|
-| `cache_labels` | `true` (default), `false` | When `cache_labels` is `true`, the reformatting of the labels is cached in memory. It can be set to `false` if there is insufficient memory to cache a huge number of different labels in the dataset. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext` |
+| `normalize_labels` | `true` (default), `false` | When `normalize_labels` is `true`, all labels are normalized. That is, all symbols are removed; all alphabets are converted to lower case. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext` |
+| `normalize_texts` | `true` (default), `false` | When `normalize_texts` is `true`, all texts are normalized. That is, all symbols are removed, all alphabets are converted to lower case; and all unicode word characters (e.g., Chinese characters) are delimited by a space. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext` |
+| `cache_labels` | `true`, `false` (default) | When `cache_labels` is `true`, the normalized labels are cached in memory. It can be set to `false` if there is insufficient memory to cache a huge number of different labels in the dataset. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext` |
 
 ## Supported dataset formats
 
