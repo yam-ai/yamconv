@@ -34,6 +34,8 @@ The following are the supported converters:
 
 * `mlt.fasttext2sqlite`: fastText text file to SQLite database file
 * `mlt.sqlite2fasttext`: SQLite database file to fastText text file
+* `mlt.fasttext2fasttext`: fastText text file to fastText text file (with normalization)
+* `mlt.sqlite2sqlite`: SQLite database file to SQLite database file (with normalization)
 
 ### Settings
 

@@ -270,3 +270,37 @@ class SQLite2FastText(Converter):
             cache_labels=cache_labels)
         super(self.__class__, self).__init__(
             reader, from_formatter, writer, to_formatter, logger, nlines)
+
+
+class FastText2FastText(Converter):
+    def __init__(self, in_path, out_path,
+                 normalize_labels, normalize_texts,
+                 cache_labels,
+                 logger=None, nlines=1000):
+        reader = FastTextReader(in_path)
+        from_formatter = FromFastText(
+            cache_labels=cache_labels)
+        writer = FastTextWriter(out_path)
+        to_formatter = ToFastText(
+            normalize_labels=normalize_labels,
+            normalize_texts=normalize_texts,
+            cache_labels=cache_labels)
+        super(self.__class__, self).__init__(
+            reader, from_formatter, writer, to_formatter, logger, nlines)
+
+
+class SQLite2SQLite(Converter):
+    def __init__(self, in_path, out_path,
+                 normalize_labels, normalize_texts,
+                 cache_labels,
+                 logger=None, nlines=1000):
+        reader = SQLiteReader(in_path)
+        from_formatter = Formatter(
+            cache_labels=cache_labels)
+        writer = FastTextWriter(out_path)
+        to_formatter = ToFastText(
+            normalize_labels=normalize_labels,
+            normalize_texts=normalize_texts,
+            cache_labels=cache_labels)
+        super(self.__class__, self).__init__(
+            reader, from_formatter, writer, to_formatter, logger, nlines)

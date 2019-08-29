@@ -18,7 +18,7 @@ import sys
 import getopt
 import logging
 from json import loads
-from mlt.io import FastText2SQLite, SQLite2FastText
+from mlt.io import FastText2SQLite, SQLite2FastText, FastText2FastText, SQLite2SQLite
 from common.ex import YamconvError
 
 NUM_LINES = 1000
@@ -27,6 +27,8 @@ NORMALIZE_LABELS = True
 NORMALIZE_TEXTS = True
 MLT_FASTTEXT_TO_SQLITE = 'mlt.fasttext2sqlite'
 MLT_SQLITE_TO_FASTTEXT = 'mlt.sqlite2fasttext'
+MLT_FASTTEXT_TO_FASTTEXT = 'mlt.fasttext2fasttext'
+MLT_SQLITE_TO_SQLITE = 'mlt.sqlite2sqlite'
 
 
 def main(argv):
@@ -102,6 +104,20 @@ def get_converter(name, infile, outfile, settings, logger, nlines):
             normalize_texts=normalize_texts,
             cache_labels=cache_labels,
             logger=logger, nlines=nlines)
+    elif name == MLT_FASTTEXT_TO_FASTTEXT:
+        converter = FastText2FastText(
+            infile, outfile,
+            normalize_labels=normalize_labels,
+            normalize_texts=normalize_texts,
+            cache_labels=cache_labels,
+            logger=logger, nlines=nlines)
+    elif name == MLT_SQLITE_TO_SQLITE:
+        converter = SQLite2SQLite(
+            infile, outfile,
+            normalize_labels=normalize_labels,
+            normalize_texts=normalize_texts,
+            cache_labels=cache_labels,
+            logger=logger, nlines=nlines)
     return converter
 
 
@@ -131,7 +147,8 @@ def get_logger(log_level):
 
 
 def err(progname, e=None):
-    converter_names = [MLT_FASTTEXT_TO_SQLITE, MLT_SQLITE_TO_FASTTEXT]
+    converter_names = [MLT_FASTTEXT_TO_SQLITE, MLT_SQLITE_TO_FASTTEXT,
+                       MLT_FASTTEXT_TO_FASTTEXT, MLT_SQLITE_TO_SQLITE]
     print('Usage: {} -c converter -i input_file -o ouput_file -s settings -v'.format(progname),
           file=sys.stderr)
     print('-c: converter name', file=sys.stderr)
