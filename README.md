@@ -61,7 +61,7 @@ The following is a fragment of an example fastText dataset file:
 
 ```text
 __label__food __label__region Many people love having dim sum in Hong Kong restaurants.
-__label__region __label__plant __label__business The Netherlands is the major supplier to the European floral market.
+__label__region __label__plant __label__business The Netherlands is a major supplier to the European floral market.
 ```
 
 #### SQLite database
