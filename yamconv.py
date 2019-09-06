@@ -18,17 +18,19 @@ import sys
 import getopt
 import logging
 from json import loads
-from mlt.io import FastText2SQLite, SQLite2FastText, FastText2FastText, SQLite2SQLite
+from mlt.io import FastText2SQLite, SQLite2FastText, FastText2FastText, SQLite2SQLite, CSV2SQLite, CSV2FastText
 from common.ex import YamconvError
 
 NUM_LINES = 1000
 CACHE_LABELS = False
 NORMALIZE_LABELS = True
-NORMALIZE_TEXTS = True
+WORD_SEQ = True
 MLT_FASTTEXT_TO_SQLITE = 'mlt.fasttext2sqlite'
 MLT_SQLITE_TO_FASTTEXT = 'mlt.sqlite2fasttext'
 MLT_FASTTEXT_TO_FASTTEXT = 'mlt.fasttext2fasttext'
 MLT_SQLITE_TO_SQLITE = 'mlt.sqlite2sqlite'
+MLT_CSV_TO_SQLITE = 'mlt.csv2sqlite'
+MLT_CSV_TO_FASTTEXT = 'mlt.csv2fasttext'
 
 
 def main(argv):
@@ -87,35 +89,49 @@ def get_converter(name, infile, outfile, settings, logger, nlines):
     normalize_labels = get_boolean_setting(
         settings, 'normalize_labels', NORMALIZE_LABELS,
         logger)
-    normalize_texts = get_boolean_setting(
-        settings, 'normalize_texts', NORMALIZE_TEXTS,
+    word_seq = get_boolean_setting(
+        settings, 'word_seq', WORD_SEQ,
         logger)
     if name == MLT_FASTTEXT_TO_SQLITE:
         converter = FastText2SQLite(
             infile, outfile,
             normalize_labels=normalize_labels,
-            normalize_texts=normalize_texts,
+            word_seq=word_seq,
             cache_labels=cache_labels,
             logger=logger, nlines=nlines)
     elif name == MLT_SQLITE_TO_FASTTEXT:
         converter = SQLite2FastText(
             infile, outfile,
             normalize_labels=normalize_labels,
-            normalize_texts=normalize_texts,
+            word_seq=word_seq,
             cache_labels=cache_labels,
             logger=logger, nlines=nlines)
     elif name == MLT_FASTTEXT_TO_FASTTEXT:
         converter = FastText2FastText(
             infile, outfile,
             normalize_labels=normalize_labels,
-            normalize_texts=normalize_texts,
+            word_seq=word_seq,
             cache_labels=cache_labels,
             logger=logger, nlines=nlines)
     elif name == MLT_SQLITE_TO_SQLITE:
         converter = SQLite2SQLite(
             infile, outfile,
             normalize_labels=normalize_labels,
-            normalize_texts=normalize_texts,
+            word_seq=word_seq,
+            cache_labels=cache_labels,
+            logger=logger, nlines=nlines)
+    elif name == MLT_CSV_TO_SQLITE:
+        converter = CSV2SQLite(
+            infile, outfile,
+            normalize_labels=normalize_labels,
+            word_seq=word_seq,
+            cache_labels=cache_labels,
+            logger=logger, nlines=nlines)
+    elif name == MLT_CSV_TO_FASTTEXT:
+        converter = CSV2FastText(
+            infile, outfile,
+            normalize_labels=normalize_labels,
+            word_seq=word_seq,
             cache_labels=cache_labels,
             logger=logger, nlines=nlines)
     return converter
@@ -148,7 +164,8 @@ def get_logger(log_level):
 
 def err(progname, e=None):
     converter_names = [MLT_FASTTEXT_TO_SQLITE, MLT_SQLITE_TO_FASTTEXT,
-                       MLT_FASTTEXT_TO_FASTTEXT, MLT_SQLITE_TO_SQLITE]
+                       MLT_FASTTEXT_TO_FASTTEXT, MLT_SQLITE_TO_SQLITE,
+                       MLT_CSV_TO_SQLITE, MLT_CSV_TO_FASTTEXT]
     print('Usage: {} -c converter -i input_file -o ouput_file -s settings -v'.format(progname),
           file=sys.stderr)
     print('-c: converter name', file=sys.stderr)
