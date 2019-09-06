@@ -32,14 +32,14 @@ True
 True
 >>> norm_mlt.labels == labels
 True
->>> tft = ToFastText(normalize_labels=True, normalize_texts=True, cache_labels=True)
+>>> tft = ToFastText(normalize_labels=True, word_seq=True, cache_labels=True)
 >>> to_mlt = tft.format(norm_mlt)
 >>> to_mlt.text == text
 True
 >>> to_mlt.labels == ft_labels_2
 True
 >>>
->>> nft = Normalizer(normalize_labels=True, normalize_texts=True, cache_labels=False)
+>>> nft = Normalizer(normalize_labels=True, word_seq=True, cache_labels=False)
 >>> n_mlt = nft.format(norm_mlt)
 >>> n_mlt.text == text
 True
@@ -51,14 +51,14 @@ True
 True
 >>> norm_mlt.labels == labels
 True
->>> tft = ToFastText(normalize_labels=True, normalize_texts = True, cache_labels=True)
+>>> tft = ToFastText(normalize_labels=True, word_seq = True, cache_labels=True)
 >>> to_mlt = tft.format(norm_mlt)
 >>> to_mlt.text == text
 True
 >>> to_mlt.labels == ft_labels_2
 True
 >>>
->>> nft = Normalizer(normalize_labels=True, normalize_texts=True, cache_labels=False)
+>>> nft = Normalizer(normalize_labels=True, word_seq=True, cache_labels=False)
 >>> n_mlt = nft.format(norm_mlt)
 >>> n_mlt.text == text
 True
@@ -73,9 +73,13 @@ from common.prepro import normalize_label, normalize_text
 
 
 class MultiLabelText:
-    def __init__(self, text=''):
+    def __init__(self, text='', idstr=None):
         self.text = text
+        self.idstr = idstr
         self.labels = set()
+
+    def set_id(self, idstr):
+        self.idstr = idstr
 
     def set_text(self, text):
         self.text = text
@@ -100,7 +104,7 @@ class Formatter:
         return text
 
     def format(self, mlt):
-        for_mlt = MultiLabelText(self.format_text(mlt.text))
+        for_mlt = MultiLabelText(self.format_text(mlt.text), mlt.idstr)
         for lab in mlt.labels:
             if self.cache_labels:
                 can_lab = self.cached_labels.get(lab)
@@ -124,30 +128,30 @@ class FromFastText(Formatter):
 class ToFastText(Formatter):
     def __init__(self,
                  normalize_labels,
-                 normalize_texts,
+                 word_seq,
                  cache_labels=False):
         self.normalize_labels = normalize_labels
-        self.normalize_texts = normalize_texts
+        self.word_seq = word_seq
         super(self.__class__, self).__init__(cache_labels)
 
     def format_label(self, label):
         return '__label__' + normalize_label(label, self.normalize_labels)
 
     def format_text(self, text):
-        return normalize_text(text, self.normalize_texts)
+        return normalize_text(text, self.word_seq)
 
 
 class Normalizer(Formatter):
     def __init__(self,
                  normalize_labels,
-                 normalize_texts,
+                 word_seq,
                  cache_labels=False):
         self.normalize_labels = normalize_labels
-        self.normalize_texts = normalize_text
+        self.word_seq = word_seq
         super(self.__class__, self).__init__(cache_labels)
 
     def format_label(self, label):
         return normalize_label(label, self.normalize_labels)
 
     def format_text(self, text):
-        return normalize_text(text, self.normalize_texts)
+        return normalize_text(text, self.word_seq)
