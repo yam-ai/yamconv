@@ -273,7 +273,7 @@ class SQLiteWriter(Writer):
             'INSERT INTO texts (id, text) VALUES (?, ?)', (idstr, mlt.text))
         for label in mlt.labels:
             self.cur.execute(
-                'INSERT INTO labels (label, text_id) VALUES (?, ?)', (idstr, label))
+                'INSERT INTO labels (label, text_id) VALUES (?, ?)', (label, idstr, ))
         self.conn.commit()  # Can omit this commit for autocommit
         self.text_id += 1
 
