@@ -97,7 +97,7 @@ __label__region __label__plant __label__business The Netherlands is the major su
 The dataset is in form of a CSV (Common Separated Values) file. The first row is the header, which looks like:
 
 ```csv
-"id', "text", "region", "business", "food", "plaint"
+"id', "text", "region", "business", "food", "plant"
 ```
 
 The first two cells can be arbitrary strings. The thrid and the following cells store the labels.
