@@ -24,7 +24,7 @@ from common.ex import YamconvError
 NUM_LINES = 1000
 CACHE_LABELS = False
 NORMALIZE_LABELS = True
-WORD_SEQ = True
+WORD_SEQ = False
 MLT_FASTTEXT_TO_SQLITE = 'mlt.fasttext2sqlite'
 MLT_SQLITE_TO_FASTTEXT = 'mlt.sqlite2fasttext'
 MLT_FASTTEXT_TO_FASTTEXT = 'mlt.fasttext2fasttext'

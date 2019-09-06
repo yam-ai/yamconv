@@ -20,6 +20,11 @@ import sqlite3
 import logging
 import os
 import csv
+from uuid import uuid4
+
+
+def gen_id():
+    return uuid4().hex
 
 
 class Converter:
@@ -128,7 +133,15 @@ class CSVReader(Reader):
         self.reader = csv.reader(self.csv_file)
         try:
             header = next(self.reader)
-            self.labels = header[2:]
+            if header[0].strip().lower() == 'id':
+                self.has_id = True
+            else:
+                self.has_id = False
+            if self.has_id:
+                self.label_start = 2
+            else:
+                self.label_start = 1
+            self.labels = header[self.label_start:]
         except Exception as e:
             raise YamconvError('Failed to read header row: {}'.format(e))
         if not self.labels:
@@ -141,14 +154,21 @@ class CSVReader(Reader):
             except StopIteration as e:
                 return None
             try:
-                mlt = MultiLabelText(row[1])
+                mlt = MultiLabelText(row[self.label_start - 1])
             except Exception as e:
                 raise('Failed to read the text: {}'.format(e))
-            if len(row) <= 2:
+            if self.has_id:
+                idstr = row[0]
+            else:
+                idstr = None
+            if idstr:
+                mlt.set_id(idstr)
+            if len(row) <= self.label_start:
                 continue
-            for i, col in enumerate(row[2:]):
+            for i, col in enumerate(row[self.label_start:]):
                 if i >= len(self.labels):
-                    raise YamconvError('Label index out of range: {}'.format())
+                    raise YamconvError(
+                        'Column {} does not contain any label in the header row: {}'.format())
                 if col == '1':
                     mlt.add_label(self.labels[i])
             break
@@ -265,17 +285,25 @@ class SQLiteWriter(Writer):
         # self.conn.isolation_level = None
         self.cur = self.conn.cursor()
         self.cur.executescript(schema)
-        self.text_id = 0
 
     def write(self, mlt):
-        idstr = format(self.text_id, 'X')
-        self.cur.execute(
-            'INSERT INTO texts (id, text) VALUES (?, ?)', (idstr, mlt.text))
+        idstr = mlt.idstr
+        if not idstr:
+            idstr = gen_id()
+        while(True):
+            try:
+                self.cur.execute(
+                    'INSERT INTO texts (id, text) VALUES (?, ?)',
+                    (idstr, mlt.text, ))
+                break
+            except sqlite3.IntegrityError as e:
+                idstr = gen_id()
+
         for label in mlt.labels:
             self.cur.execute(
-                'INSERT INTO labels (label, text_id) VALUES (?, ?)', (label, idstr, ))
+                'INSERT INTO labels (label, text_id) VALUES (?, ?)',
+                (label, idstr, ))
         self.conn.commit()  # Can omit this commit for autocommit
-        self.text_id += 1
 
     def close(self):
         self.conn.commit()
@@ -286,7 +314,7 @@ class FastText2SQLite(Converter):
     def __init__(self, fasttext_path, sqlite_path,
                  normalize_labels, word_seq,
                  cache_labels,
-                 logger=None, nlines=1000):
+                 logger, nlines):
         reader = FastTextReader(fasttext_path)
         from_formatter = FromFastText(
             cache_labels=cache_labels)
@@ -302,8 +330,8 @@ class FastText2SQLite(Converter):
 class SQLite2FastText(Converter):
     def __init__(self, sqlite_path, fasttext_path,
                  normalize_labels, word_seq,
-                 cache_labels=True,
-                 logger=None, nlines=1000):
+                 cache_labels,
+                 logger, nlines):
         reader = SQLiteReader(sqlite_path)
         from_formatter = Formatter(
             cache_labels=cache_labels)
@@ -320,7 +348,7 @@ class FastText2FastText(Converter):
     def __init__(self, in_path, out_path,
                  normalize_labels, word_seq,
                  cache_labels,
-                 logger=None, nlines=1000):
+                 logger, nlines):
         reader = FastTextReader(in_path)
         from_formatter = FromFastText(
             cache_labels=cache_labels)
@@ -337,7 +365,7 @@ class SQLite2SQLite(Converter):
     def __init__(self, in_path, out_path,
                  normalize_labels, word_seq,
                  cache_labels,
-                 logger=None, nlines=1000):
+                 logger, nlines):
         reader = SQLiteReader(in_path)
         from_formatter = Formatter(
             cache_labels=cache_labels)
@@ -353,8 +381,8 @@ class SQLite2SQLite(Converter):
 class CSV2SQLite(Converter):
     def __init__(self, in_path, out_path,
                  normalize_labels, word_seq,
-                 cache_labels,
-                 logger=None, nlines=1000):
+                 cache_labels, logger,
+                 nlines):
         reader = CSVReader(in_path)
         from_formatter = FromFastText(
             cache_labels=cache_labels)
@@ -370,8 +398,8 @@ class CSV2SQLite(Converter):
 class CSV2FastText(Converter):
     def __init__(self, in_path, out_path,
                  normalize_labels, word_seq,
-                 cache_labels,
-                 logger=None, nlines=1000):
+                 cache_labels, logger,
+                 nlines):
         reader = CSVReader(in_path)
         from_formatter = FromFastText(
             cache_labels=cache_labels)

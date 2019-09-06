@@ -73,9 +73,13 @@ from common.prepro import normalize_label, normalize_text
 
 
 class MultiLabelText:
-    def __init__(self, text=''):
+    def __init__(self, text='', idstr=None):
         self.text = text
+        self.idstr = idstr
         self.labels = set()
+
+    def set_id(self, idstr):
+        self.idstr = idstr
 
     def set_text(self, text):
         self.text = text
@@ -100,7 +104,7 @@ class Formatter:
         return text
 
     def format(self, mlt):
-        for_mlt = MultiLabelText(self.format_text(mlt.text))
+        for_mlt = MultiLabelText(self.format_text(mlt.text), mlt.idstr)
         for lab in mlt.labels:
             if self.cache_labels:
                 can_lab = self.cached_labels.get(lab)
