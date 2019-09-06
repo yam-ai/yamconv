@@ -46,7 +46,7 @@ Settings for converters are given in the `-s` option as a JSON string, e.g., `'{
 | Setting | Values | Description | Applicable converters |
 |---------|--------|-------------|-----------------------|
 | `normalize_labels` | `true` (default), `false` | When `normalize_labels` is `true`, all labels are normalized. That is, all symbols are removed; all alphabets are converted to lower case. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext`, `mlt.csv2sqlite`, `mlt.csv2fasttext`, `mlt.sqlite2sqlite`, `mlt.fasttext2fasttext` |
-| `word_seq` | `true` (default), `false` | When `word_seq` is `true`, each text is normalized into a sequence of lower-case words. That is, all symbols are removed, all alphabets are converted to lower case; and all unicode word characters (e.g., Chinese characters) are delimited by a space. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext`, `mlt.csv2sqlite`, `mlt.csv2fasttext`, `mlt.sqlite2sqlite`, `mlt.fasttext2fasttext` |
+| `word_seq` | `true`), `false` (default) | When `word_seq` is `true`, each text is normalized into a sequence of lower-case words. That is, all symbols are removed, all alphabets are converted to lower case; and all unicode word characters (e.g., Chinese characters) are delimited by a space. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext`, `mlt.csv2sqlite`, `mlt.csv2fasttext`, `mlt.sqlite2sqlite`, `mlt.fasttext2fasttext` |
 | `cache_labels` | `true`, `false` (default) | When `cache_labels` is `true`, the normalized labels are cached in memory. It can be set to `false` if there is insufficient memory to cache a huge number of different labels in the dataset. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext`, `mlt.csv2sqlite`, `mlt.csv2fasttext`, `mlt.sqlite2sqlite`, `mlt.fasttext2fasttext` |
 
 ## Supported dataset formats
@@ -94,20 +94,57 @@ __label__region __label__plant __label__business The Netherlands is the major su
 
 ### CSV text file
 
-The dataset is in form of a CSV (Common Separated Values) file. The first row is the header, which looks like:
+The dataset is in form of a CSV (Common Separated Values) file. The first row is the header. Each of the second row and the following rows stores a single record. The CSV file can be in either of one of the following formats.
+
+#### Format 1
+
+Suppose the format of the header row is like the follwoing:
 
 ```csv
-"id', "text", "region", "business", "food", "plant"
+"id", "text", "region", "business", "food", "plant"
 ```
 
-The first two cells can be arbitrary strings. The thrid and the following cells store the labels.
+That is:
 
-Each of the second and the following rows stores a record per row, which looks like:
+* Cell `1`: `id`
+* Cell `2`: any arbitary value
+* Cell `n` where `n >= 3`: the name of label `n`, e.g., `region`, `business`, `food`, `plant`.
+
+Each record row looks like:
 
 ```csv
 "10", "Many people love having dim sum in Hong Kong restaurants.", 1, 0, 1, 0
-
 ```
+
+That is:
+
+* Cell `1`: the `id` string
+* Cell `2`: the text content
+* Cell `n` where `n >= 3`: `1` or `0` representing whether the text is classified with label `n` or not respectively.
+
+#### Format 2
+
+Suppose the format of the header row is like the follwoing:
+
+```csv
+"text", "region", "business", "food", "plant"
+```
+
+That is:
+
+* Cell `1`: any arbitary value
+* Cell `n` where `n >= 2`: the name of label `n`, e.g., `region`, `business`, `food`, `plant`.
+
+Each record row looks like:
+
+```csv
+"Many people love having dim sum in Hong Kong restaurants.", 1, 0, 1, 0
+```
+
+That is:
+
+* Cell `1`: the text content
+* Cell `n` where `n >= 2`: `1` or `0` representing whether the text is classified with label `n` or not respectively.
 
 ## Profesional services
 
