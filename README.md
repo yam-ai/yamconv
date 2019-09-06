@@ -1,6 +1,6 @@
 # yamconv
 
-`yamconv` coverts a machine learning dataset from one format to another format.
+`yamconv` converts a machine learning dataset from one format to another format.
 
 ## Installation
 
