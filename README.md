@@ -34,10 +34,10 @@ The following are the supported converters:
 
 * `mlt.fasttext2sqlite`: fastText text file to SQLite database file
 * `mlt.sqlite2fasttext`: SQLite database file to fastText text file
-* `mlt.fasttext2fasttext`: fastText text file to fastText text file (with normalization)
-* `mlt.sqlite2sqlite`: SQLite database file to SQLite database file (with normalization)
 * `mlt.csv2sqlite`: CSV text file to SQLite database file
 * `mlt.csv2fasttext`: CSV text file to fastText text file
+* `mlt.fasttext2fasttext`: fastText text file to fastText text file (with normalization)
+* `mlt.sqlite2sqlite`: SQLite database file to SQLite database file (with normalization)
 
 ### Settings
 
@@ -45,9 +45,9 @@ Settings for converters are given in the `-s` option as a JSON string, e.g., `'{
 
 | Setting | Values | Description | Applicable converters |
 |---------|--------|-------------|-----------------------|
-| `normalize_labels` | `true` (default), `false` | When `normalize_labels` is `true`, all labels are normalized. That is, all symbols are removed; all alphabets are converted to lower case. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext` |
-| `word_seq` | `true` (default), `false` | When `word_seq` is `true`, each text is normalized into a sequence of lower-case words. That is, all symbols are removed, all alphabets are converted to lower case; and all unicode word characters (e.g., Chinese characters) are delimited by a space. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext` |
-| `cache_labels` | `true`, `false` (default) | When `cache_labels` is `true`, the normalized labels are cached in memory. It can be set to `false` if there is insufficient memory to cache a huge number of different labels in the dataset. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext` |
+| `normalize_labels` | `true` (default), `false` | When `normalize_labels` is `true`, all labels are normalized. That is, all symbols are removed; all alphabets are converted to lower case. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext`, `mlt.csv2sqlite`, `mlt.csv2fasttext`, `mlt.sqlite2sqlite`, `mlt.fasttext2fasttext` |
+| `word_seq` | `true` (default), `false` | When `word_seq` is `true`, each text is normalized into a sequence of lower-case words. That is, all symbols are removed, all alphabets are converted to lower case; and all unicode word characters (e.g., Chinese characters) are delimited by a space. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext`, `mlt.csv2sqlite`, `mlt.csv2fasttext`, `mlt.sqlite2sqlite`, `mlt.fasttext2fasttext` |
+| `cache_labels` | `true`, `false` (default) | When `cache_labels` is `true`, the normalized labels are cached in memory. It can be set to `false` if there is insufficient memory to cache a huge number of different labels in the dataset. | `mlt.fasttext2sqlite`, `mlt.sqlite2fasttext`, `mlt.csv2sqlite`, `mlt.csv2fasttext`, `mlt.sqlite2sqlite`, `mlt.fasttext2fasttext` |
 
 ## Supported dataset formats
 
