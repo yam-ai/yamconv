@@ -18,7 +18,7 @@ import sys
 import getopt
 import logging
 from json import loads
-from mlt.io import FastText2SQLite, SQLite2FastText, FastText2FastText, SQLite2SQLite,\
+from mlt.conv import FastText2SQLite, SQLite2FastText, FastText2FastText, SQLite2SQLite,\
     CSV2SQLite, CSV2FastText, SQLite2CSV, CSV2CSV
 from common.ex import YamconvError
 
@@ -143,16 +143,14 @@ def get_converter(name, infile, outfile, settings, logger, nlines):
             normalize_labels=normalize_labels,
             word_seq=word_seq,
             cache_labels=cache_labels,
-            logger=logger, nlines=nlines
-        )
+            logger=logger, nlines=nlines)
     elif name == MLT_CSV_TO_CSV:
         converter = CSV2CSV(
             infile, outfile,
             normalize_labels=normalize_labels,
             word_seq=word_seq,
             cache_labels=cache_labels,
-            logger=logger, nlines=nlines
-        )
+            logger=logger, nlines=nlines)
     return converter
 
 
