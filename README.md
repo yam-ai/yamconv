@@ -19,7 +19,7 @@ pip install .
 ## Usage
 
 ```sh
-yamconv.py -c converter -i input_file -o ouput_file -s settings -v
+yamconv.py -c converter -i input_file -o output_file -s settings -v
 ```
 
 * `-c`: converter name
