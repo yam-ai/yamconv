@@ -70,25 +70,7 @@ True
 
 import re
 from common.prepro import normalize_label, normalize_text
-
-
-class MultiLabelText:
-    def __init__(self, text='', idstr=None):
-        self.text = text
-        self.idstr = idstr
-        self.labels = set()
-
-    def set_id(self, idstr):
-        self.idstr = idstr
-
-    def set_text(self, text):
-        self.text = text
-
-    def add_word(self, word):
-        self.text += (' ' + word)
-
-    def add_label(self, label):
-        self.labels.add(label)
+from mlt.mlt import MultiLabelText
 
 
 class Formatter:
