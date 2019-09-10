@@ -24,7 +24,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='yamconv',
-    version='0.1.5',
+    version='0.1.6',
     description='yamconv converts the file formats of machine learning datasets',
     long_description=long_description,
     long_description_content_type='text/markdown',
