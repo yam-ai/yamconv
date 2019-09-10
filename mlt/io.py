@@ -244,8 +244,9 @@ class SQLiteReader(Reader):
             text_id = self.text_ids.pop()
         except:
             return None
-        self.cur.execute('SELECT text FROM texts WHERE id = ?', (text_id, ))
-        mlt = MultiLabelText(self.cur.fetchone()[0])
+        self.cur.execute(
+            'SELECT text FROM texts WHERE id = ?', (text_id, ))
+        mlt = MultiLabelText(self.cur.fetchone()[1], text_id)
         self.cur.execute(
             'SELECT label FROM labels WHERE text_id = ?', (text_id, ))
         rows = self.cur.fetchall()
