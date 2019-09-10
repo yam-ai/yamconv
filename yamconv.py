@@ -184,7 +184,7 @@ def err(progname, e=None):
                        MLT_FASTTEXT_TO_FASTTEXT, MLT_SQLITE_TO_SQLITE,
                        MLT_CSV_TO_SQLITE, MLT_CSV_TO_FASTTEXT,
                        MLT_SQLITE_TO_CSV, MLT_CSV_TO_CSV]
-    print('Usage: {} -c converter -i input_file -o ouput_file -s settings -v'.format(progname),
+    print('Usage: {} -c converter -i input_file -o output_file -s settings -v'.format(progname),
           file=sys.stderr)
     print('-c: converter name', file=sys.stderr)
     print('-i: input file path', file=sys.stderr)
