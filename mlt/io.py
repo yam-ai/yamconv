@@ -238,6 +238,9 @@ class SQLiteReader(Reader):
         self.cur.execute('SELECT id FROM texts')
         rows = self.cur.fetchall()
         self.text_ids = [row[0] for row in rows]
+        self.cur.execute('SELECT DISTINCT label FROM labels ORDER BY label')
+        rows = self.cur.fetchall()
+        self.labels = [row[0] for row in rows]
 
     def read(self):
         try:
@@ -246,7 +249,8 @@ class SQLiteReader(Reader):
             return None
         self.cur.execute(
             'SELECT text FROM texts WHERE id = ?', (text_id, ))
-        mlt = MultiLabelText(self.cur.fetchone()[1], text_id)
+        row = self.cur.fetchone()
+        mlt = MultiLabelText(row[0], text_id)
         self.cur.execute(
             'SELECT label FROM labels WHERE text_id = ?', (text_id, ))
         rows = self.cur.fetchall()
@@ -309,6 +313,56 @@ class SQLiteWriter(Writer):
     def close(self):
         self.conn.commit()
         self.conn.close()
+
+
+class CSVWriter(Writer):
+    def __init__(self, out_path, reader, formatter):
+        self.reader = reader
+        self.formatter = formatter
+        super(self.__class__, self).__init__(out_path)
+
+    def open(self):
+        try:
+            self.labels = [self.formatter.format_label(
+                l) for l in self.reader.labels]
+        except:
+            raise YamconvError(
+                'Labels could not be aggregated by reader {}'.format(self.reader.__class__.__name__))
+        if not self.labels:
+            raise YamconvError(
+                'No labels are given by reader {}'.format(self.reader.__class__.__name__))
+        self.out_file = open(self.filepath, 'w', newline='')
+        self.csv_writer = csv.writer(
+            self.out_file, delimiter=',', quotechar='"',
+            quoting=csv.QUOTE_NONNUMERIC)
+        self.first_row = True
+
+    def write(self, mlt):
+        if self.first_row:
+            if mlt.idstr:
+                self.has_id = True
+                row = ['id', 'text']
+            else:
+                self.has_id = False
+                row = ['text']
+            for label in self.labels:
+                row.append(label)
+            self.csv_writer.writerow(row)
+            self.first_row = False
+        if self.has_id:
+            row = [mlt.idstr]
+        else:
+            row = []
+        row.append(mlt.text)
+        for label in self.labels:
+            if label in mlt.labels:
+                row.append(1)
+            else:
+                row.append(0)
+        self.csv_writer.writerow(row)
+
+    def close(self):
+        self.out_file.close()
 
 
 class FastText2SQLite(Converter):
@@ -409,5 +463,39 @@ class CSV2FastText(Converter):
             normalize_labels=normalize_labels,
             word_seq=word_seq,
             cache_labels=cache_labels)
+        super(self.__class__, self).__init__(
+            reader, from_formatter, writer, to_formatter, logger, nlines)
+
+
+class SQLite2CSV(Converter):
+    def __init__(self, sqlite_path, csv_path,
+                 normalize_labels, word_seq,
+                 cache_labels,
+                 logger, nlines):
+        reader = SQLiteReader(sqlite_path)
+        from_formatter = Formatter(
+            cache_labels=cache_labels)
+        to_formatter = Normalizer(
+            normalize_labels=normalize_labels,
+            word_seq=word_seq,
+            cache_labels=cache_labels)
+        writer = CSVWriter(csv_path, reader, to_formatter)
+        super(self.__class__, self).__init__(
+            reader, from_formatter, writer, to_formatter, logger, nlines)
+
+
+class CSV2CSV(Converter):
+    def __init__(self, in_path, out_path,
+                 normalize_labels, word_seq,
+                 cache_labels, logger,
+                 nlines):
+        reader = CSVReader(in_path)
+        from_formatter = FromFastText(
+            cache_labels=cache_labels)
+        to_formatter = Normalizer(
+            normalize_labels=normalize_labels,
+            word_seq=word_seq,
+            cache_labels=cache_labels)
+        writer = CSVWriter(out_path, reader, to_formatter)
         super(self.__class__, self).__init__(
             reader, from_formatter, writer, to_formatter, logger, nlines)
