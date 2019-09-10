@@ -94,11 +94,11 @@ __label__food __label__region Many people love having dim sum in Hong Kong resta
 __label__region __label__plant __label__business The Netherlands is the major supplier to the European floral market.
 ```
 
-### CSV text file
+#### CSV text file
 
 The dataset is in form of a CSV (Common Separated Values) file. The first row is the header. Each of the second row and the following rows stores a single record. The CSV file can be in either of one of the following formats.
 
-#### Format 1
+##### Format 1
 
 Suppose the format of the header row is like the follwoing:
 
@@ -124,7 +124,7 @@ That is:
 * Cell `2`: the text content
 * Cell `n` where `n >= 3`: `1` or `0` representing whether the text is classified with label `n` or not respectively.
 
-#### Format 2
+##### Format 2
 
 Suppose the format of the header row is like the follwoing:
 
