@@ -148,7 +148,7 @@ That is:
 * Cell `1`: the text content
 * Cell `n` where `n >= 2`: `1` or `0` representing whether the text is classified with label `n` or not respectively.
 
-## Profesional services
+## Professional services
 
 If you need any supporting resources or consultancy services from YAM AI Machinery, please find us at:
 
